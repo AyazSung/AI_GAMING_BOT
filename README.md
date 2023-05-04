@@ -21,7 +21,7 @@ For our gaming bot to improve, we run the genetic algorithm that will try select
 # How this genetic algorithm works exactly?
 For this genetic algorithm, chromosome is a set of parameters of CNN and gene is some weight in CNN model.
 Fitness function returns the game reward. For this reason, the greater the value of the fitness function means the better model.
-# How run this project?
+# How to run this project?
 First, you should download Main.ipynb file. Second, you should run this code. To run code, you should install needed libraries by running third cell:
 ![image](https://user-images.githubusercontent.com/90756690/236258583-dc131e1d-ae3e-42d3-bfc2-4d4385ee69ed.png)
 So, just uncommented this cell before your first run of this project.
