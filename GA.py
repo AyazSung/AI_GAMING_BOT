@@ -17,6 +17,7 @@ class GA:
     def __init__(self, population_size: int,
                  gen_limit: int,
                  p_crossover: float,
+                 mut_prob: float,
                  p_mutation: float,
                  env: gym.Env,
                  number_of_weights: int,
@@ -25,6 +26,7 @@ class GA:
         self.cur_gen_scores = [0.0] * population_size
         self.gen_limit = gen_limit
         self.p_crossover = p_crossover
+        self.mut_prob = mut_prob
         self.p_mutation = p_mutation
         self.LOW = -5
         self.UP = 5
@@ -55,12 +57,15 @@ class GA:
     def crossover(self, parent1: List[float], parent2: List[float]) -> (List[float], List[float]):
         crossover_point = random.randint(0, self.number_of_weights - 1)
 
-        if random.random() < self.p_crossover:
-            child1 = parent1[:crossover_point] + parent2[crossover_point:]
-            child2 = parent2[:crossover_point] + parent1[crossover_point:]
-            return child1, child2
-        else:
-            return parent1, parent2
+        parent1 = parent1.copy()
+        parent2 = parent2.copy()
+        child1 = parent1[:crossover_point] + parent2[crossover_point:]
+        child2 = parent1.copy()
+        for w in range(self.number_of_weights):
+            if random.random() < self.p_crossover:
+                child2[w] = parent2[w]
+
+        return child1, child2
 
     def selection(self, population: List[List[float]], fitness) -> (List[float], List[float]):
         return random.choices(
@@ -110,7 +115,7 @@ class GA:
 
             print(f"Best fitness, GEN INIT : {self.cur_gen_scores[0]}")
         else:
-            print("Read the previous generation...")
+            print("Reading the previous generation...")
             self.population_main = self.read_generation(gen_idx)
             self.sort_cur_gen_by_fitness()
         for generation in range(self.gen_limit):
@@ -118,17 +123,19 @@ class GA:
             population_next = self.population_main[:2]
 
             print("Creating next population...")
-            for _ in range(self.population_size // 2):
+            for _ in range(self.population_size // 2 - 1):
                 parent1, parent2 = self.selection(self.population_main, self.cur_gen_scores)
                 child1, child2 = self.crossover(parent1, parent2)
-                child1 = self.mutation(child1)
-                child2 = self.mutation(child2)
+                if random.random() <= self.mut_prob:
+                    child1 = self.mutation(child1)
+                if random.random() <= self.mut_prob:
+                    child2 = self.mutation(child2)
                 population_next.append(child1)
                 population_next.append(child2)
 
             print("Evaluating next population...")
-            population_next.sort(key=self.fitness, reverse=True)
             self.population_main = population_next[:self.population_size]
+            self.sort_cur_gen_by_fitness()
             print("Next population sorted.")
             print("Saving folder with generation model weights...")
             self.save_cur_generation(gen_idx)
@@ -154,10 +161,7 @@ class GA:
             observation = cv2.resize(observation, dsize=(70, 70), interpolation=cv2.INTER_CUBIC)
             action = self.modelCNN.model.predict(np.array([observation]), verbose=0)
 
-            if random.random() > 0.3:
-                action = np.argmax(action)
-            else:
-                action = random.choice(range(0, 6))
+            action = np.argmax(action)
 
             observation, reward, truncted, terminated, info = self.env.step(action)
             action_count += 1
