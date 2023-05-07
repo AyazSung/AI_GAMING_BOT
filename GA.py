@@ -1,6 +1,7 @@
 import random
 from typing import List
 
+import time
 import cv2
 import gym
 import numpy as np
@@ -10,6 +11,8 @@ from MODEL_CNN import ModelCNN
 
 
 class GA:
+    cur_gen_scores = []
+    population_main = []
 
     def __init__(self, population_size: int,
                  gen_limit: int,
@@ -19,6 +22,7 @@ class GA:
                  number_of_weights: int,
                  model: ModelCNN):
         self.population_size = population_size
+        self.cur_gen_scores = [0.0] * population_size
         self.gen_limit = gen_limit
         self.p_crossover = p_crossover
         self.p_mutation = p_mutation
@@ -35,9 +39,9 @@ class GA:
             for weight in individual:
                 f.write(str(weight) + "\n")
 
-    def save_generation(self, generation, current_generation_number):
-        for i in range(len(generation)):
-            self.saving_individual(generation[i], current_generation_number, i)
+    def save_cur_generation(self, current_generation_number):
+        for i in range(self.population_size):
+            self.saving_individual(self.population_main[i], current_generation_number, i)
 
     def create_weight(self) -> float:
         return random.uniform(self.LOW, self.UP)
@@ -58,10 +62,10 @@ class GA:
         else:
             return parent1, parent2
 
-    def selection(self, population: List[List[float]]) -> (List[float], List[float]):
+    def selection(self, population: List[List[float]], fitness) -> (List[float], List[float]):
         return random.choices(
             population=population,
-            weights=[self.fitness(individual) for individual in population],
+            weights=fitness,
             k=2)
 
     def mutation(self, individual) -> List[float]:
@@ -72,7 +76,7 @@ class GA:
 
     def read_individual(self, gen_idx, ind_idx):
         f = open(f"Gen{gen_idx}/ind{ind_idx}.txt", "r")
-        weights = [float(i) for i in f.read().split("\n")]
+        weights = [float(i) for i in f.read().split("\n") if i != ""]
         f.close()
         return weights
 
@@ -82,27 +86,40 @@ class GA:
             gen.append(self.read_individual(gen_idx, i))
         return gen
 
+    def calc_scores(self, generation):
+        scores = [self.fitness(ind) for ind in generation]
+        return scores
+
+    def sort_cur_gen_by_fitness(self):
+        self.cur_gen_scores = self.calc_scores(self.population_main)
+        ans = [i for i in sorted(zip(self.cur_gen_scores, self.population_main), reverse=True)]
+        self.population_main = [i[1] for i in ans]
+        self.cur_gen_scores = [i[0] for i in ans]
+
     def run_ga(self) -> List[float]:
         f = open('current_generation.txt', 'r')
         gen_idx = int(f.read())
         f.close()
         if gen_idx == 0:
             print("Creating initial population...")
-            population_main = self.create_population()
+            self.population_main = self.create_population()
             print("Evaluating initial population...")
-            population_main.sort(key=self.fitness, reverse=True)
+            self.sort_cur_gen_by_fitness()
+
             print("Main population sorted.")
 
-            print(f"Best fitness, GEN INIT : {self.fitness(population_main[0])}")
+            print(f"Best fitness, GEN INIT : {self.cur_gen_scores[0]}")
         else:
             print("Read the previous generation...")
-            population_main = self.read_generation(gen_idx)
+            self.population_main = self.read_generation(gen_idx)
+            self.sort_cur_gen_by_fitness()
         for generation in range(self.gen_limit):
-            population_next = population_main[:2]
+            st = time.time()
+            population_next = self.population_main[:2]
 
             print("Creating next population...")
-            for _ in range(self.population_size // 2 - 1):
-                parent1, parent2 = self.selection(population_main)
+            for _ in range(self.population_size // 2):
+                parent1, parent2 = self.selection(self.population_main, self.cur_gen_scores)
                 child1, child2 = self.crossover(parent1, parent2)
                 child1 = self.mutation(child1)
                 child2 = self.mutation(child2)
@@ -110,21 +127,19 @@ class GA:
                 population_next.append(child2)
 
             print("Evaluating next population...")
-            population_main.sort(key=self.fitness, reverse=True)
-            population_main = population_next[:self.population_size]
+            population_next.sort(key=self.fitness, reverse=True)
+            self.population_main = population_next[:self.population_size]
             print("Next population sorted.")
             print("Saving folder with generation model weights...")
-            self.save_generation(population_main, gen_idx)
+            self.save_cur_generation(gen_idx)
             f = open('current_generation.txt', 'w')
             f.write(str(gen_idx))
             f.close()
             gen_idx += 1
-            best_f = self.fitness(population_main[0])
-            print(f"Best fitness, GEN {generation} : {best_f}")
+            best_f = self.cur_gen_scores[0]
+            print(f"Best fitness, GEN {generation} : {best_f}, Time of execution: {time.time() - st}")
 
-        population_main.sort(key=self.fitness, reverse=True)
-
-        return population_main[0]
+        return self.population_main[0]
 
     def fitness(self, individual: List[float]) -> float:
 
