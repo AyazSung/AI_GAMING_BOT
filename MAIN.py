@@ -25,7 +25,7 @@ env.metadata['video.frames_per_second'] = 120
 
 MODEL = ModelCNN()
 
-GA = GA(population_size=3,
+GA = GA(population_size=4,
         gen_limit=2,
         p_crossover=0.7,
         p_mutation=0.4,
