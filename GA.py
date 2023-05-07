@@ -156,7 +156,7 @@ class GA:
         done = False
         action_count = 0
         total_reward = 0
-        while not done and action_count < 100:
+        while not done and action_count < 250:
             observation = observation[35:170, 20:]
             observation = cv2.resize(observation, dsize=(70, 70), interpolation=cv2.INTER_CUBIC)
             action = self.modelCNN.model.predict(np.array([observation]), verbose=0)
