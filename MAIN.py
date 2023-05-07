@@ -19,7 +19,7 @@ def save_weights_to_file(reward: int, weights: List[float]):
 env = gym.make('ALE/AirRaid-v5',
                obs_type="grayscale",
                render_mode='human',
-               frameskip=30,
+               frameskip=7,
                repeat_action_probability=0)
 env.metadata['video.frames_per_second'] = 120
 
