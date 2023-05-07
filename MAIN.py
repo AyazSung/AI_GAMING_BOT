@@ -39,4 +39,6 @@ total_reward = MODEL.play(env, best_weights)
 print(f"Total reward: {total_reward}")
 save_weights_to_file(int(total_reward), best_weights)
 
-#%%
+def load_weights_from_file(name) -> List[float]:
+    with open(name, "r") as f:
+        return [float(weight) for weight in f.readlines()]
