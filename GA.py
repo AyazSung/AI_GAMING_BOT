@@ -33,7 +33,7 @@ class GA:
         self.modelCNN = model
 
     def saving_individual(self, individual, cur_gen_idx, ind_idx):
-        filename = f"Gen{cur_gen_idx}/ind{ind_idx}.txt"
+        filename = f"Generations/Gen{cur_gen_idx}/ind{ind_idx}.txt"
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as f:
             for weight in individual:
@@ -75,7 +75,7 @@ class GA:
         return individual
 
     def read_individual(self, gen_idx, ind_idx):
-        f = open(f"Gen{gen_idx}/ind{ind_idx}.txt", "r")
+        f = open(f"Generations/Gen{gen_idx}/ind{ind_idx}.txt", "r")
         weights = [float(i) for i in f.read().split("\n") if i != ""]
         f.close()
         return weights
