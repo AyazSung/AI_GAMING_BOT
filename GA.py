@@ -9,7 +9,7 @@ import tensorflow as tf
 import os
 from MODEL_CNN import ModelCNN
 
-
+# Genetic Algorithm class for OpenAi Gym environment for finding optimal weights.
 class GA:
     cur_gen_scores = []
     population_main = []
@@ -102,10 +102,12 @@ class GA:
         self.cur_gen_scores = [i[0] for i in ans]
 
     def run_ga(self) -> List[float]:
+        # continue from current_generation
         f = open('current_generation.txt', 'r')
         gen_idx = int(f.read())
         f.close()
         if gen_idx == 0:
+            # If no saved generations, start from beginning
             print("Creating initial population...")
             self.population_main = self.create_population()
             print("Evaluating initial population...")
@@ -124,6 +126,7 @@ class GA:
 
             print("Creating next population...")
             for _ in range(self.population_size // 2 - 1):
+                # get chromosomes to create new offsprings from them
                 parent1, parent2 = self.selection(self.population_main, self.cur_gen_scores)
                 child1, child2 = self.crossover(parent1, parent2)
                 if random.random() <= self.mut_prob:
@@ -148,21 +151,29 @@ class GA:
 
         return self.population_main[0]
 
+    # Fitness value function.
+    # Plays the game and returns the reward.
     def fitness(self, individual: List[float]) -> float:
 
+        # adjusting parameters sof the model
         self.modelCNN.set_weights(individual)
 
+        # return env to default state
         observation = self.env.reset()[0]
         done = False
         action_count = 0
         total_reward = 0
         while not done and action_count < 250:
+            # get the observation and reformat
             observation = observation[35:170, 20:]
             observation = cv2.resize(observation, dsize=(70, 70), interpolation=cv2.INTER_CUBIC)
+            # predict the next step to take, returns array with probabilities
             action = self.modelCNN.model.predict(np.array([observation]), verbose=0)
 
+            # choose action with the highest probability
             action = np.argmax(action)
 
+            # get the new state of the game
             observation, reward, truncted, terminated, info = self.env.step(action)
             action_count += 1
             done = terminated or truncted
@@ -170,5 +181,6 @@ class GA:
 
         return total_reward
 
+    # Start function to start searching for optimal weights
     def find_best_weights(self) -> List[float]:
         return self.run_ga()
