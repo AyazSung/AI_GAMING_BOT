@@ -6,6 +6,7 @@ import tensorflow as tf
 class ModelCNN:
 
     def __init__(self):
+        # Main CNN model for analyzing screen and prediction
         self.model = tf.keras.models.Sequential([
             tf.keras.layers.Conv2D(8, (3, 3), activation='relu'),
             tf.keras.layers.MaxPool2D((2, 2)),
@@ -48,6 +49,7 @@ class ModelCNN:
             # update inserted
             inserted += total_n_weights + total_n_biases
 
+    # play game with the specific weights
     def play(self, env, best_weights) -> float:
 
         self.set_weights(best_weights)
