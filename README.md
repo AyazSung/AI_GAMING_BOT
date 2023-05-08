@@ -34,10 +34,5 @@ For our gaming bot to improve, we run the genetic algorithm that will try select
 For this genetic algorithm, chromosome is a set of parameters of CNN and gene is some weight in CNN model.
 Fitness function returns the game reward. For this reason, the greater the value of the fitness function means the better model.
 # How to run this project?
-First, you should download Main.ipynb file. Second, you should run this code. To run code, you should install needed libraries by running third cell:
-```
-!pip install gym[atari]
-!pip install gym[accept-rom-license]
-!pip install tensorflow
-```
-So, just uncommented this cell before your first run of this project.
+
+Just run the `MAIN.py` file.
