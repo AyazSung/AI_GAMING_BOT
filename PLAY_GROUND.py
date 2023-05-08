@@ -19,6 +19,6 @@ env.metadata['video.frames_per_second'] = 120
 
 MODEL = ModelCNN()
 
-best_weights = load_weights_from_file("best_weights_1425.txt")
+best_weights = load_weights_from_file("best_weights_1575.txt")
 total_reward = MODEL.play(env, best_weights)
 print(f"Total reward: {total_reward}")
