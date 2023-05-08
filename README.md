@@ -38,5 +38,6 @@ First, you should download Main.ipynb file. Second, you should run this code. To
 ```
 !pip install gym[atari]
 !pip install gym[accept-rom-license]
+!pip install tensorflow
 ```
 So, just uncommented this cell before your first run of this project.
